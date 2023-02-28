@@ -1,4 +1,4 @@
-import { Router } from "../../../../../deps/oak.ts";
+import { Router } from "oak";
 
 const router = new Router({
   prefix: "/",

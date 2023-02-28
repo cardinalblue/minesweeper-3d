@@ -1,4 +1,4 @@
-import { Application } from "./deps/oak.ts";
+import { Application } from "oak";
 import { router as rootRouter } from "./src/interface/transport/http/root_controller/mod.ts";
 import { router as todoRouter } from "./src/interface/transport/http/todo_controller/mod.ts";
 
