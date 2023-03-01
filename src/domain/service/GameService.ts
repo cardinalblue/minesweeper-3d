@@ -1,7 +1,7 @@
 import GameRepository from "../../domain/model/game_model/GameRepository.ts";
 import GameAgg from "../../domain/model/game_model/GameAgg.ts";
 import PositionVo from "../../domain/model/game_model/PositionVo.ts";
-import SizeVo from "../../domain/model/game_model/SizeVo.Ts";
+import SizeVo from "../../domain/model/game_model/SizeVo.ts";
 
 export default class GameService {
   private gameRepository: GameRepository;

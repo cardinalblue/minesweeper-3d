@@ -1,6 +1,6 @@
 import AreaVo from "./AreaVo.ts";
 import PositionVo from "./PositionVo.ts";
-import SizeVo from "./SizeVo.Ts";
+import SizeVo from "./SizeVo.ts";
 
 export default class GameAgg {
   private id: string;
