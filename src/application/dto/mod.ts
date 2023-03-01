@@ -1,0 +1,45 @@
+import { rangeMatrix } from "../../lib/mod.ts";
+import { GameAgg } from "../../domain/model/game_model/mod.ts";
+
+type PositionVoDto = {
+  x: number;
+  z: number;
+};
+
+type SizeVoDto = {
+  width: number;
+  height: number;
+};
+
+type AreaVoDto = {
+  revealed: boolean;
+  flagged: boolean;
+  hasMine: boolean;
+  adjMinesCount: number;
+};
+
+type GameAggDto = {
+  id: string;
+  size: SizeVoDto;
+  minesCount: number;
+  areas: AreaVoDto[][];
+};
+
+export const newGameAggDto = (game: GameAgg): GameAggDto => {
+  return {
+    id: game.getId(),
+    size: {
+      width: game.getSize().getWidth(),
+      height: game.getSize().getHeight(),
+    },
+    minesCount: game.getMinesCount(),
+    areas: rangeMatrix(game.getAreas(), (area) => ({
+      revealed: area.getRevealed(),
+      flagged: area.getFlagged(),
+      hasMine: area.getHasMine(),
+      adjMinesCount: area.getAdjMinesCount(),
+    })),
+  };
+};
+
+export type { GameAggDto, PositionVoDto };

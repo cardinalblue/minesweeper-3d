@@ -79,7 +79,7 @@ export default class GameAgg {
       const z: number = Math.floor(Math.random() * this.size.getHeight());
       const pos: PositionVo = new PositionVo(x, z);
       const area = this.getArea(pos);
-      if (area.hasMine() || area.isRevealed()) continue;
+      if (area.getHasMine() || area.getRevealed()) continue;
 
       this.placeMine(pos);
     }
@@ -87,6 +87,14 @@ export default class GameAgg {
 
   public getId(): string {
     return this.id;
+  }
+
+  public getSize(): SizeVo {
+    return this.size;
+  }
+
+  public getMinesCount(): number {
+    return this.minesCount;
   }
 
   public getAreas(): AreaVo[][] {
@@ -105,5 +113,15 @@ export default class GameAgg {
     if (this.revealedAreaCount === 1) {
       this.placeMines();
     }
+  }
+
+  public flagArea(pos: PositionVo) {
+    if (this.isPosOutsideField(pos)) return;
+
+    const area = this.getArea(pos);
+    this.setArea(
+      pos,
+      this.getArea(pos).setFlagged(!area.getFlagged()),
+    );
   }
 }

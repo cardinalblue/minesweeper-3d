@@ -19,15 +19,15 @@ export default class AreaVo {
     this._adjMinesCount = adjMinesCount;
   }
 
-  public isRevealed() {
+  public getRevealed() {
     return this._revealed;
   }
 
-  public isFlagged() {
+  public getFlagged() {
     return this._flagged;
   }
 
-  public hasMine() {
+  public getHasMine() {
     return this._hasMine;
   }
 
