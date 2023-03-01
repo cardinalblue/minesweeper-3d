@@ -1,4 +1,4 @@
-import { Router } from "oak";
+import { Router } from "../../../../../deps/oak.ts";
 import GameMemRepository from "../../../../infrastructure/persistence/memory/GameMemRepository.ts";
 import GameService from "../../../../domain/service/GameService.ts";
 import PositionVo from "../../../../domain/model/game_model/PositionVo.ts";
