@@ -1,4 +1,4 @@
-import EventEmitter from "https://deno.land/x/events/mod.ts";
+import EventEmitter from "../../../../../deps/events.ts";
 import { Router } from "../../../../../deps/oak.ts";
 import GameMemRepository from "../../../../infrastructure/persistence/memory/GameMemRepository.ts";
 import {
