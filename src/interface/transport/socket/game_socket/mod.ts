@@ -85,6 +85,7 @@ router.get("/:id", (ctx) => {
 
   const onclose = () => {
     gameSocketAppService.removePlayer(playerId);
+    eventBus.emit("players_updated");
   };
   ws.onclose = onclose;
 
