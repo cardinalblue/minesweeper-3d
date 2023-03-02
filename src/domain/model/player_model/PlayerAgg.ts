@@ -7,6 +7,7 @@ export default class PlayerAgg {
   private name: string;
   private position: PositionVo;
   private direction: DirectionVo;
+  private guilty: boolean;
 
   constructor(
     id: string,
@@ -14,12 +15,14 @@ export default class PlayerAgg {
     name: string,
     position: PositionVo,
     direction: DirectionVo,
+    guilty: boolean,
   ) {
     this.id = id;
     this.gameId = gameId;
     this.name = name;
     this.position = position;
     this.direction = direction;
+    this.guilty = guilty;
   }
 
   public getId() {
@@ -48,5 +51,13 @@ export default class PlayerAgg {
 
   public setDirection(direction: DirectionVo) {
     this.direction = direction;
+  }
+
+  public getGuilty() {
+    return this.guilty;
+  }
+
+  public setGuilty(guilty: boolean) {
+    this.guilty = guilty;
   }
 }

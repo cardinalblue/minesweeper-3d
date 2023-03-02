@@ -69,6 +69,7 @@ export default class Service {
       name,
       originPos,
       new DirectionVo(1),
+      false,
     );
     this.playerRepository.add(newPlayer);
 
@@ -109,7 +110,7 @@ export default class Service {
 
   public movePlayer(gameId: string, playerId: string, directionDto: number) {
     const game = this.gameRepository.get(gameId);
-    if (!game) {
+    if (!game || game.isEnded()) {
       return;
     }
 
@@ -124,28 +125,34 @@ export default class Service {
     );
 
     if (direction.toNumber() === 0) {
-      let newPos = player.getPosition();
+      let targetPos = player.getPosition();
       switch (newDirection.toNumber() % 4) {
         case 0:
-          newPos = newPos.shift(0, -1);
+          targetPos = targetPos.shift(0, -1);
           break;
         case 1:
-          newPos = newPos.shift(1, 0);
+          targetPos = targetPos.shift(1, 0);
           break;
         case 2:
-          newPos = newPos.shift(0, 1);
+          targetPos = targetPos.shift(0, 1);
           break;
         case 3:
-          newPos = newPos.shift(-1, 0);
+          targetPos = targetPos.shift(-1, 0);
           break;
       }
-      if (game.getSize().includePos(newPos)) {
-        const areaStood = game.getArea(newPos);
+      if (game.getSize().includePos(targetPos)) {
+        const areaStood = game.getArea(targetPos);
         if (!areaStood.getFlagged()) {
-          player.setPosition(newPos);
+          player.setPosition(targetPos);
 
           if (!areaStood.getRevealed()) {
-            game.revealArea(newPos);
+            game.revealArea(targetPos);
+            const revealedArea = game.getArea(targetPos);
+
+            if (revealedArea.getBoomed()) {
+              player.setGuilty(true);
+            }
+
             this.gameRepository.update(game);
             this.integrationEventPublisher.publish(
               IntegrationEvent.GameUpdated,
@@ -163,7 +170,7 @@ export default class Service {
 
   public flagArea(gameId: string, playerId: string) {
     const game = this.gameRepository.get(gameId);
-    if (!game) {
+    if (!game || game.isEnded()) {
       return;
     }
 
@@ -223,6 +230,7 @@ export default class Service {
         Math.floor(game.getSize().getHeight() / 2),
       );
       player.setPosition(originPos);
+      player.setGuilty(false);
       this.playerRepository.update(player);
       this.integrationEventPublisher.publish(IntegrationEvent.PlayersUpdated);
     });

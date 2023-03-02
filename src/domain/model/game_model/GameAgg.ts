@@ -23,13 +23,17 @@ export default class GameAgg {
     this.areas = this.generateNewAreas();
   }
 
+  public isEnded() {
+    return this.status === "SUCCEEDED" || this.status === "FAILED";
+  }
+
   public generateNewAreas() {
     const newAreas: AreaVo[][] = [];
     this.size.range((x, y) => {
       if (newAreas[x] === undefined) {
         newAreas.push([]);
       }
-      newAreas[x][y] = new AreaVo(false, false, false, 0);
+      newAreas[x][y] = new AreaVo(false, false, false, 0, false);
     });
     return newAreas;
   }
@@ -139,7 +143,8 @@ export default class GameAgg {
     const targetArea = this.getArea(pos);
 
     if (targetArea.getHasMine()) {
-      this.setArea(pos, targetArea.setRevealed(true));
+      this.setArea(pos, targetArea.setRevealed(true).setBoomed(true));
+      this.status = "FAILED";
     } else if (targetArea.getAdjMinesCount() === 0) {
       while (minesToReveal.length > 0) {
         // @ts-ignore Weird TS complaints, need to sort this out later.

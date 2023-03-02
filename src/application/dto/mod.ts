@@ -31,6 +31,7 @@ type AreaVoDto = {
   flagged: boolean;
   hasMine: boolean;
   adjMinesCount: number;
+  boomed: boolean;
 };
 
 type GameAggDto = {
@@ -55,6 +56,7 @@ export const newGameAggDto = (game: GameAgg): GameAggDto => {
       flagged: area.getFlagged(),
       hasMine: area.getHasMine(),
       adjMinesCount: area.getAdjMinesCount(),
+      boomed: area.getBoomed(),
     })),
     status: game.getStatus(),
     camera: game.getCamera(),
@@ -67,6 +69,7 @@ type PlayerAggDto = {
   name: string;
   position: PositionVoDto;
   direction: DirectionVoDto;
+  guilty: boolean;
 };
 
 export const newPlayerAggDto = (player: PlayerAgg): PlayerAggDto => {
@@ -76,6 +79,7 @@ export const newPlayerAggDto = (player: PlayerAgg): PlayerAggDto => {
     name: player.getName(),
     position: newPositionVoDto(player.getPosition()),
     direction: newDirectionVoDto(player.getDirection()),
+    guilty: player.getGuilty(),
   };
 };
 

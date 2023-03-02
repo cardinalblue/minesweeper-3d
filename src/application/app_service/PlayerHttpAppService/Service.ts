@@ -21,6 +21,7 @@ export default class Service {
       name,
       new PositionVo(0, 0),
       new DirectionVo(0),
+      false,
     );
     this.playerRepository.add(newPlayer);
 
