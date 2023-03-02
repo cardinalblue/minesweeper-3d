@@ -4,6 +4,8 @@ enum RequestDtoType {
   MovePlayer = "MOVE_PLAYER",
   RevealArea = "REVEAL_AREA",
   FlagArea = "FLAG_AREA",
+  ChangeCamera = "CHANGE_CAMERA",
+  ResetGame = "RESET_GAME",
 }
 
 type MovePlayerRequestDto = {
@@ -16,9 +18,19 @@ type FlagAreaRequestDto = {
   position: PositionVoDto;
 };
 
+type ChangeCameraRequestDto = {
+  type: RequestDtoType.ChangeCamera;
+};
+
+type ResetGameRequestDto = {
+  type: RequestDtoType.ResetGame;
+};
+
 type RequestDto =
   | MovePlayerRequestDto
-  | FlagAreaRequestDto;
+  | FlagAreaRequestDto
+  | ChangeCameraRequestDto
+  | ResetGameRequestDto;
 
 export type { RequestDto };
 export { RequestDtoType };

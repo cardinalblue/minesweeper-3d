@@ -72,6 +72,14 @@ router.get("/:id", (ctx) => {
         gameId,
         myPlayerId,
       );
+    } else if (request.type === RequestDtoType.ChangeCamera) {
+      gameSocketAppService.changeCamera(
+        gameId,
+      );
+    } else if (request.type === RequestDtoType.ResetGame) {
+      gameSocketAppService.resetGame(
+        gameId,
+      );
     }
   };
   ws.onmessage = onmessage;

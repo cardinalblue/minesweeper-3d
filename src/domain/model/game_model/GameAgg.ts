@@ -10,6 +10,7 @@ export default class GameAgg {
   private areas: AreaVo[][];
   private placedMinesCount: number;
   private status: GameStatus;
+  private camera: 0 | 1 | 2 | 3 | 4;
 
   constructor(id: string, size: SizeVo, minesCount: number) {
     this.id = id;
@@ -17,15 +18,26 @@ export default class GameAgg {
     this.minesCount = minesCount;
     this.placedMinesCount = 0;
     this.status = "SLEEPING";
+    this.camera = 0;
 
+    this.areas = this.generateNewAreas();
+  }
+
+  public generateNewAreas() {
     const newAreas: AreaVo[][] = [];
-    size.range((x, y) => {
+    this.size.range((x, y) => {
       if (newAreas[x] === undefined) {
         newAreas.push([]);
       }
       newAreas[x][y] = new AreaVo(false, false, false, 0);
     });
-    this.areas = newAreas;
+    return newAreas;
+  }
+
+  public reset() {
+    this.placedMinesCount = 0;
+    this.status = "SLEEPING";
+    this.areas = this.generateNewAreas();
   }
 
   private isPosOutsideField(pos: PositionVo): boolean {
@@ -91,6 +103,14 @@ export default class GameAgg {
 
   public getSize(): SizeVo {
     return this.size;
+  }
+
+  public getCamera(): 0 | 1 | 2 | 3 | 4 {
+    return this.camera;
+  }
+
+  public changeCamera() {
+    this.camera = (this.camera + 1) % 5 as 0 | 1 | 2 | 3 | 4;
   }
 
   public getMinesCount(): number {

@@ -39,6 +39,7 @@ type GameAggDto = {
   minesCount: number;
   areas: AreaVoDto[][];
   status: "SLEEPING" | "IN_PROGRESS" | "SUCCEEDED" | "FAILED";
+  camera: 0 | 1 | 2 | 3 | 4;
 };
 
 export const newGameAggDto = (game: GameAgg): GameAggDto => {
@@ -56,6 +57,7 @@ export const newGameAggDto = (game: GameAgg): GameAggDto => {
       adjMinesCount: area.getAdjMinesCount(),
     })),
     status: game.getStatus(),
+    camera: game.getCamera(),
   };
 };
 

@@ -100,8 +100,8 @@ export default class Service {
   public createGame(): GameAggDto {
     const newGame = new GameAgg(
       "dc3e3d8c-da82-4e15-8263-49c178f57bff",
-      new SizeVo(35, 35),
-      100,
+      new SizeVo(41, 41),
+      120,
     );
     this.gameRepository.add(newGame);
     return newGameAggDto(newGame);
@@ -140,13 +140,17 @@ export default class Service {
           break;
       }
       if (game.getSize().includePos(newPos)) {
-        player.setPosition(newPos);
-
         const areaStood = game.getArea(newPos);
-        if (!areaStood.getRevealed()) {
-          game.revealArea(newPos);
-          this.gameRepository.update(game);
-          this.integrationEventPublisher.publish(IntegrationEvent.GameUpdated);
+        if (!areaStood.getFlagged()) {
+          player.setPosition(newPos);
+
+          if (!areaStood.getRevealed()) {
+            game.revealArea(newPos);
+            this.gameRepository.update(game);
+            this.integrationEventPublisher.publish(
+              IntegrationEvent.GameUpdated,
+            );
+          }
         }
       }
     }
@@ -191,6 +195,40 @@ export default class Service {
     game.flagArea(flagPos);
     this.gameRepository.add(game);
 
+    this.integrationEventPublisher.publish(IntegrationEvent.GameUpdated);
+  }
+
+  public changeCamera(gameId: string) {
+    const game = this.gameRepository.get(gameId);
+    if (!game) {
+      return;
+    }
+
+    game.changeCamera();
+    this.gameRepository.update(game);
+
+    this.integrationEventPublisher.publish(IntegrationEvent.GameUpdated);
+  }
+
+  public resetGame(gameId: string) {
+    const game = this.gameRepository.get(gameId);
+    if (!game) {
+      return;
+    }
+
+    const allPlayers = this.playerRepository.getAll(gameId);
+    allPlayers.forEach((player) => {
+      const originPos = new PositionVo(
+        -1,
+        Math.floor(game.getSize().getHeight() / 2),
+      );
+      player.setPosition(originPos);
+      this.playerRepository.update(player);
+      this.integrationEventPublisher.publish(IntegrationEvent.PlayersUpdated);
+    });
+
+    game.reset();
+    this.gameRepository.update(game);
     this.integrationEventPublisher.publish(IntegrationEvent.GameUpdated);
   }
 }
