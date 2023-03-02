@@ -28,6 +28,9 @@ class SocketPresenter implements Presenter {
   }
 
   public onMessage(msg: string): void {
+    if (this.ws.readyState !== this.ws.OPEN) {
+      return;
+    }
     this.ws.send(msg);
   }
 }

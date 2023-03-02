@@ -116,6 +116,10 @@ export default class Service {
         break;
     }
 
+    if (!game.getSize().includePos(newPos)) {
+      return;
+    }
+
     player.setPosition(newPos);
     this.playerRepository.update(player);
   }
