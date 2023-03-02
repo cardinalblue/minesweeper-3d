@@ -1,6 +1,7 @@
 import EventEmitter from "../../../../../deps/events.ts";
 import { Router } from "../../../../../deps/oak.ts";
 import GameMemRepository from "../../../../infrastructure/persistence/memory/GameMemRepository.ts";
+import PlayerMemRepository from "../../../../infrastructure/persistence/memory/PlayerMemRepository.ts";
 import {
   Service as GameSocketAppService,
 } from "../../../../application/app_service/GameSocketAppService/mod.ts";
@@ -15,7 +16,10 @@ import {
 class EventBus extends EventEmitter {}
 const eventBus = new EventBus();
 
-const gameSocketAppService = new GameSocketAppService(new GameMemRepository());
+const gameSocketAppService = new GameSocketAppService(
+  new GameMemRepository(),
+  new PlayerMemRepository(),
+);
 
 class SocketPresenter implements Presenter {
   private ws: WebSocket;
@@ -39,11 +43,13 @@ router.get("/:id", (ctx) => {
   const ws = ctx.upgrade();
 
   const gameId = ctx.params.id;
+  const playerId = "";
 
   const presenter = new SocketPresenter(ws);
 
   const onopen = () => {
     gameSocketAppService.queryGame(presenter, gameId);
+    gameSocketAppService.queryPlayers(presenter, gameId);
   };
   ws.onopen = onopen;
 
@@ -55,14 +61,14 @@ router.get("/:id", (ctx) => {
         request.position.x,
         request.position.z,
       );
-      eventBus.emit("updated");
+      eventBus.emit("game_updated");
     } else if (request.type === RequestDtoType.FlagArea) {
       gameSocketAppService.flagArea(
         gameId,
         request.position.x,
         request.position.z,
       );
-      eventBus.emit("updated");
+      eventBus.emit("game_updated");
     }
   };
   ws.onmessage = onmessage;
@@ -71,8 +77,12 @@ router.get("/:id", (ctx) => {
   };
   ws.onclose = onclose;
 
-  eventBus.on("updated", () => {
+  eventBus.on("game_updated", () => {
     gameSocketAppService.queryGame(presenter, gameId);
+  });
+
+  eventBus.on("players_updated", () => {
+    gameSocketAppService.queryPlayers(presenter, gameId);
   });
 });
 

@@ -1,7 +1,8 @@
-import { GameAggDto } from "../../dto/mod.ts";
+import { GameAggDto, PlayerAggDto } from "../../dto/mod.ts";
 
 enum ResponseDtoType {
   GameUpdated = "GAME_UPDATED",
+  PlayersUpdated = "PLAYERS_UPDATED",
 }
 
 type GameUpdatedResponseDto = {
@@ -9,5 +10,10 @@ type GameUpdatedResponseDto = {
   game: GameAggDto;
 };
 
+type PlayersUpdatedResponseDto = {
+  type: ResponseDtoType.PlayersUpdated;
+  players: PlayerAggDto[];
+};
+
 export { ResponseDtoType };
-export type { GameUpdatedResponseDto };
+export type { GameUpdatedResponseDto, PlayersUpdatedResponseDto };
