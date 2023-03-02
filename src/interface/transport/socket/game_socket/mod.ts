@@ -54,7 +54,7 @@ router.get("/:id", (ctx) => {
   const onopen = () => {
     gameSocketAppService.queryGame(presenter, gameId);
 
-    gameSocketAppService.createPlayer(playerId, gameId, "Hello World");
+    gameSocketAppService.addPlayer(playerId, gameId, "Hello World");
     eventBus.emit("players_updated");
 
     gameSocketAppService.queryPlayers(presenter, gameId);
@@ -70,6 +70,7 @@ router.get("/:id", (ctx) => {
         request.direction,
       );
       eventBus.emit("players_updated");
+      eventBus.emit("game_updated");
     } else if (request.type === RequestDtoType.RevealArea) {
       gameSocketAppService.revealArea(
         gameId,

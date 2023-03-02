@@ -44,11 +44,16 @@ export default class Service {
     presenter.onMessage(JSON.stringify(response));
   }
 
-  public createPlayer(
+  public addPlayer(
     playerId: string,
     gameId: string,
     name: string,
   ) {
+    const game = this.gameRepository.get(gameId);
+    if (!game) {
+      return;
+    }
+
     const newPlayer = new PlayerAgg(
       playerId,
       gameId,
@@ -57,6 +62,9 @@ export default class Service {
       new DirectionVo(2),
     );
     this.playerRepository.add(newPlayer);
+
+    game.revealArea(newPlayer.getPosition());
+    this.gameRepository.update(game);
   }
 
   public removePlayer(
@@ -122,7 +130,9 @@ export default class Service {
 
     player.setPosition(newPos);
     player.setDirection(direction);
+    game.revealArea(newPos);
     this.playerRepository.update(player);
+    this.gameRepository.update(game);
   }
 
   public revealArea(gameId: string, playerId: string) {
