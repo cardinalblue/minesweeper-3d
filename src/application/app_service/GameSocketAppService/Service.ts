@@ -110,12 +110,12 @@ export default class Service {
 
   public movePlayer(gameId: string, playerId: string, directionDto: number) {
     const game = this.gameRepository.get(gameId);
-    if (!game || game.isEnded()) {
+    if (!game) {
       return;
     }
 
     const player = this.playerRepository.get(playerId);
-    if (!player) {
+    if (!player || player.getGuilty()) {
       return;
     }
 
@@ -170,12 +170,12 @@ export default class Service {
 
   public flagArea(gameId: string, playerId: string) {
     const game = this.gameRepository.get(gameId);
-    if (!game || game.isEnded()) {
+    if (!game) {
       return;
     }
 
     const player = this.playerRepository.get(playerId);
-    if (!player) {
+    if (!player || player.getGuilty()) {
       return;
     }
 
