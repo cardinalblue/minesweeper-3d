@@ -54,7 +54,7 @@ export default class Service {
       gameId,
       name,
       new PositionVo(0, 0),
-      new DirectionVo(0),
+      new DirectionVo(2),
     );
     this.playerRepository.add(newPlayer);
   }
@@ -79,8 +79,8 @@ export default class Service {
 
   public createGame(): GameAggDto {
     const newGame = new GameAgg(
-      crypto.randomUUID(),
-      new SizeVo(10, 10),
+      "dc3e3d8c-da82-4e15-8263-49c178f57bff",
+      new SizeVo(30, 30),
       50,
     );
     this.gameRepository.add(newGame);
@@ -121,6 +121,7 @@ export default class Service {
     }
 
     player.setPosition(newPos);
+    player.setDirection(direction);
     this.playerRepository.update(player);
   }
 

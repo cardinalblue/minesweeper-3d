@@ -45,4 +45,8 @@ export default class PlayerAgg {
   public getDirection() {
     return this.direction;
   }
+
+  public setDirection(direction: DirectionVo) {
+    this.direction = direction;
+  }
 }

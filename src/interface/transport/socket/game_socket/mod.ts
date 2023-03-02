@@ -20,6 +20,7 @@ const gameSocketAppService = new GameSocketAppService(
   new GameMemRepository(),
   new PlayerMemRepository(),
 );
+gameSocketAppService.createGame();
 
 class SocketPresenter implements Presenter {
   private ws: WebSocket;
@@ -48,12 +49,14 @@ router.get("/:id", (ctx) => {
   const gameId = ctx.params.id;
   const playerId = crypto.randomUUID();
 
-  gameSocketAppService.createPlayer(playerId, gameId, "Hello World");
-
   const presenter = new SocketPresenter(ws);
 
   const onopen = () => {
     gameSocketAppService.queryGame(presenter, gameId);
+
+    gameSocketAppService.createPlayer(playerId, gameId, "Hello World");
+    eventBus.emit("players_updated");
+
     gameSocketAppService.queryPlayers(presenter, gameId);
   };
   ws.onopen = onopen;
