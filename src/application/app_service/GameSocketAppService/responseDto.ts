@@ -13,6 +13,7 @@ type GameUpdatedResponseDto = {
 type PlayersUpdatedResponseDto = {
   type: ResponseDtoType.PlayersUpdated;
   players: PlayerAggDto[];
+  myPlayerId: string;
 };
 
 export { ResponseDtoType };

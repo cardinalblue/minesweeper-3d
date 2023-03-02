@@ -47,15 +47,15 @@ router.get("/:id", (ctx) => {
   const ws = ctx.upgrade();
 
   const gameId = ctx.params.id;
-  const playerId = crypto.randomUUID();
+  const myPlayerId = crypto.randomUUID();
 
   const presenter = new SocketPresenter(ws);
   const integrationSusbscriber = new MemIntegrationEventSubscriber();
 
   const onopen = () => {
     gameSocketAppService.queryGame(presenter, gameId);
-    gameSocketAppService.addPlayer(playerId, gameId, "Hello World");
-    gameSocketAppService.queryPlayers(presenter, gameId);
+    gameSocketAppService.addPlayer(myPlayerId, gameId, "Hello World");
+    gameSocketAppService.queryPlayers(presenter, gameId, myPlayerId);
   };
   ws.onopen = onopen;
 
@@ -64,20 +64,20 @@ router.get("/:id", (ctx) => {
     if (request.type === RequestDtoType.MovePlayer) {
       gameSocketAppService.movePlayer(
         gameId,
-        playerId,
+        myPlayerId,
         request.direction,
       );
     } else if (request.type === RequestDtoType.FlagArea) {
       gameSocketAppService.flagArea(
         gameId,
-        playerId,
+        myPlayerId,
       );
     }
   };
   ws.onmessage = onmessage;
 
   const onclose = () => {
-    gameSocketAppService.removePlayer(playerId);
+    gameSocketAppService.removePlayer(myPlayerId);
   };
   ws.onclose = onclose;
 
@@ -86,7 +86,7 @@ router.get("/:id", (ctx) => {
   });
 
   integrationSusbscriber.subscribe(IntegrationEvent.PlayersUpdated, () => {
-    gameSocketAppService.queryPlayers(presenter, gameId);
+    gameSocketAppService.queryPlayers(presenter, gameId, myPlayerId);
   });
 });
 

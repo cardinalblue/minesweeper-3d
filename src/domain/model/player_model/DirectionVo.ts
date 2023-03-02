@@ -4,6 +4,10 @@ export default class DirectionVo {
     this.direction = direction;
   }
 
+  public isEqual(dir: DirectionVo): boolean {
+    return this.direction === dir.toNumber();
+  }
+
   public toNumber(): number {
     return this.direction;
   }

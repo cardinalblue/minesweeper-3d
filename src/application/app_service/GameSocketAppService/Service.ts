@@ -68,7 +68,7 @@ export default class Service {
       gameId,
       name,
       originPos,
-      new DirectionVo(2),
+      new DirectionVo(1),
     );
     this.playerRepository.add(newPlayer);
 
@@ -86,11 +86,13 @@ export default class Service {
   public queryPlayers(
     presenter: Presenter,
     gameId: string,
+    myPlayerId: string,
   ) {
     const players = this.playerRepository.getAll(gameId);
     const response: PlayersUpdatedResponseDto = {
       type: ResponseDtoType.PlayersUpdated,
       players: players.map(newPlayerAggDto),
+      myPlayerId,
     };
     presenter.onMessage(JSON.stringify(response));
   }
@@ -117,39 +119,42 @@ export default class Service {
     }
 
     const direction = new DirectionVo(directionDto);
+    const newDirection = new DirectionVo(
+      (player.getDirection().toNumber() + direction.toNumber()) % 4,
+    );
 
-    let newPos = player.getPosition();
-    switch (direction.toNumber()) {
-      case 0:
-        newPos = newPos.shift(0, -1);
-        break;
-      case 1:
-        newPos = newPos.shift(1, 0);
-        break;
-      case 2:
-        newPos = newPos.shift(0, 1);
-        break;
-      case 3:
-        newPos = newPos.shift(-1, 0);
-        break;
+    if (direction.toNumber() === 0) {
+      let newPos = player.getPosition();
+      switch (newDirection.toNumber() % 4) {
+        case 0:
+          newPos = newPos.shift(0, -1);
+          break;
+        case 1:
+          newPos = newPos.shift(1, 0);
+          break;
+        case 2:
+          newPos = newPos.shift(0, 1);
+          break;
+        case 3:
+          newPos = newPos.shift(-1, 0);
+          break;
+      }
+      if (game.getSize().includePos(newPos)) {
+        player.setPosition(newPos);
+
+        const areaStood = game.getArea(newPos);
+        if (!areaStood.getRevealed()) {
+          game.revealArea(newPos);
+          this.gameRepository.update(game);
+          this.integrationEventPublisher.publish(IntegrationEvent.GameUpdated);
+        }
+      }
     }
 
-    if (!game.getSize().includePos(newPos)) {
-      return;
-    }
-
-    player.setPosition(newPos);
-    player.setDirection(direction);
+    player.setDirection(newDirection);
 
     this.playerRepository.update(player);
     this.integrationEventPublisher.publish(IntegrationEvent.PlayersUpdated);
-
-    const areaStood = game.getArea(newPos);
-    if (!areaStood.getRevealed()) {
-      game.revealArea(newPos);
-      this.gameRepository.update(game);
-      this.integrationEventPublisher.publish(IntegrationEvent.GameUpdated);
-    }
   }
 
   public flagArea(gameId: string, playerId: string) {
