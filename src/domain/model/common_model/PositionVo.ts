@@ -6,6 +6,10 @@ export default class PositionVo {
     this.z = z;
   }
 
+  public isEqual(pos: PositionVo) {
+    return this.x === pos.getX() && this.z === pos.getZ();
+  }
+
   public getX() {
     return this.x;
   }

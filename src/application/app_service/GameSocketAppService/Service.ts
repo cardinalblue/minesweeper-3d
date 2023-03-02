@@ -59,7 +59,10 @@ export default class Service {
       return;
     }
 
-    const originPos = new PositionVo(0, 0);
+    const originPos = new PositionVo(
+      -1,
+      Math.floor(game.getSize().getHeight() / 2),
+    );
     const newPlayer = new PlayerAgg(
       playerId,
       gameId,
@@ -70,13 +73,6 @@ export default class Service {
     this.playerRepository.add(newPlayer);
 
     this.integrationEventPublisher.publish(IntegrationEvent.PlayersUpdated);
-
-    const areaStood = game.getArea(originPos);
-    if (!areaStood.getRevealed()) {
-      game.revealArea(originPos);
-      this.gameRepository.update(game);
-      this.integrationEventPublisher.publish(IntegrationEvent.GameUpdated);
-    }
   }
 
   public removePlayer(
@@ -102,8 +98,8 @@ export default class Service {
   public createGame(): GameAggDto {
     const newGame = new GameAgg(
       "dc3e3d8c-da82-4e15-8263-49c178f57bff",
-      new SizeVo(30, 30),
-      50,
+      new SizeVo(35, 35),
+      100,
     );
     this.gameRepository.add(newGame);
     return newGameAggDto(newGame);
@@ -167,7 +163,29 @@ export default class Service {
       return;
     }
 
-    game.flagArea(player.getPosition());
+    let flagPos = player.getPosition();
+    switch (player.getDirection().toNumber()) {
+      case 0:
+        flagPos = flagPos.shift(0, -1);
+        break;
+      case 1:
+        flagPos = flagPos.shift(1, 0);
+        break;
+      case 2:
+        flagPos = flagPos.shift(0, 1);
+        break;
+      case 3:
+        flagPos = flagPos.shift(-1, 0);
+        break;
+    }
+
+    if (!game.getSize().includePos(flagPos)) {
+      return;
+    }
+
+    game.flagArea(flagPos);
     this.gameRepository.add(game);
+
+    this.integrationEventPublisher.publish(IntegrationEvent.GameUpdated);
   }
 }

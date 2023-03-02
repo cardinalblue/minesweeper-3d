@@ -2,20 +2,21 @@ import AreaVo from "./AreaVo.ts";
 import SizeVo from "./SizeVo.ts";
 import { PositionVo } from "../common_model/mod.ts";
 
+type GameStatus = "SLEEPING" | "IN_PROGRESS" | "SUCCEEDED" | "FAILED";
 export default class GameAgg {
   private id: string;
   private size: SizeVo;
   private minesCount: number;
   private areas: AreaVo[][];
-  private revealedAreaCount: number;
   private placedMinesCount: number;
+  private status: GameStatus;
 
   constructor(id: string, size: SizeVo, minesCount: number) {
     this.id = id;
     this.size = size;
     this.minesCount = minesCount;
-    this.revealedAreaCount = 0;
     this.placedMinesCount = 0;
+    this.status = "SLEEPING";
 
     const newAreas: AreaVo[][] = [];
     size.range((x, y) => {
@@ -70,16 +71,15 @@ export default class GameAgg {
     this.placedMinesCount += 1;
   }
 
-  private placeMines() {
-    if (this.revealedAreaCount !== 1) {
-      return;
-    }
+  private placeMines(exceptPos: PositionVo) {
     while (this.placedMinesCount < this.minesCount) {
       const x: number = Math.floor(Math.random() * this.size.getWidth());
       const z: number = Math.floor(Math.random() * this.size.getHeight());
       const pos: PositionVo = new PositionVo(x, z);
       const area = this.getArea(pos);
-      if (area.getHasMine() || area.getRevealed()) continue;
+      if (area.getHasMine() || area.getRevealed() || exceptPos.isEqual(pos)) {
+        continue;
+      }
 
       this.placeMine(pos);
     }
@@ -97,21 +97,58 @@ export default class GameAgg {
     return this.minesCount;
   }
 
+  public getStatus(): GameStatus {
+    return this.status;
+  }
+
   public getAreas(): AreaVo[][] {
     return this.areas;
   }
 
   public revealArea(pos: PositionVo) {
     if (this.isPosOutsideField(pos)) return;
+    if (this.status === "SLEEPING") {
+      this.placeMines(pos);
+    }
+    this.status = "IN_PROGRESS";
 
-    this.setArea(
-      pos,
-      this.getArea(pos).setRevealed(true),
-    );
-    this.revealedAreaCount += 1;
+    const visitedAreaMap: { [posKey: string]: true } = {};
+    const minesToReveal: PositionVo[] = [];
+    minesToReveal.push(pos);
 
-    if (this.revealedAreaCount === 1) {
-      this.placeMines();
+    const targetArea = this.getArea(pos);
+
+    if (targetArea.getHasMine()) {
+      this.setArea(pos, targetArea.setRevealed(true));
+    } else if (targetArea.getAdjMinesCount() === 0) {
+      while (minesToReveal.length > 0) {
+        // @ts-ignore Weird TS complaints, need to sort this out later.
+        const nextPos: PositionVo = minesToReveal.pop();
+        const posKey = `${nextPos.getX()},${nextPos.getZ()}`;
+
+        const isAreaVisited = visitedAreaMap[posKey];
+        if (!isAreaVisited) {
+          visitedAreaMap[posKey] = true;
+          const nextArea = this.getArea(nextPos);
+          const hasMine = nextArea.getHasMine();
+          const flagged = nextArea.getFlagged();
+          const revealed = nextArea.getRevealed();
+          const adjMinesCount = nextArea.getAdjMinesCount();
+          const doNotRevealThisArea = hasMine || revealed || flagged;
+          if (!doNotRevealThisArea) {
+            this.setArea(nextPos, nextArea.setRevealed(true));
+
+            const shallKeepTraversing = adjMinesCount === 0;
+            if (shallKeepTraversing) {
+              this.traverseAdjAreas(nextPos, (adjAreaPos: PositionVo) => {
+                minesToReveal.unshift(adjAreaPos);
+              });
+            }
+          }
+        }
+      }
+    } else {
+      this.setArea(pos, targetArea.setRevealed(true));
     }
   }
 
@@ -119,6 +156,10 @@ export default class GameAgg {
     if (this.isPosOutsideField(pos)) return;
 
     const area = this.getArea(pos);
+    if (area.getRevealed()) {
+      return;
+    }
+
     this.setArea(
       pos,
       this.getArea(pos).setFlagged(!area.getFlagged()),
