@@ -39,6 +39,6 @@ export default class PlayerMemRepository implements PlayerRepository {
     }
   }
   delete(playerId: string): void {
-    players.filter((p) => p.getId() !== playerId);
+    players = players.filter((p) => p.getId() !== playerId);
   }
 }
