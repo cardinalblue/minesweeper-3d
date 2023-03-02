@@ -13,4 +13,8 @@ export default class PositionVo {
   public getZ() {
     return this.z;
   }
+
+  public shift(deltaX: number, deltaZ: number) {
+    return new PositionVo(this.x + deltaX, this.z + deltaZ);
+  }
 }

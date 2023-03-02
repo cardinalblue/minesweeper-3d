@@ -25,4 +25,20 @@ export default class PlayerMemRepository implements PlayerRepository {
       players.push(player);
     }
   }
+  update(player: PlayerAgg): void {
+    const playerFound = findPlayer(player.getId());
+    if (playerFound) {
+      players = players.map((p) => {
+        if (p.getId() === player.getId()) {
+          return player;
+        }
+        return p;
+      });
+    } else {
+      players.push(player);
+    }
+  }
+  delete(playerId: string): void {
+    players.filter((p) => p.getId() !== playerId);
+  }
 }

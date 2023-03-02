@@ -43,7 +43,9 @@ router.get("/:id", (ctx) => {
   const ws = ctx.upgrade();
 
   const gameId = ctx.params.id;
-  const playerId = "";
+  const playerId = crypto.randomUUID();
+
+  gameSocketAppService.createPlayer(playerId, gameId, "Hello World");
 
   const presenter = new SocketPresenter(ws);
 
@@ -55,18 +57,23 @@ router.get("/:id", (ctx) => {
 
   const onmessage = (ev: MessageEvent<string>) => {
     const request: RequestDto = JSON.parse(ev.data);
-    if (request.type === RequestDtoType.RevealArea) {
+    if (request.type === RequestDtoType.MovePlayer) {
+      gameSocketAppService.movePlayer(
+        gameId,
+        playerId,
+        request.direction,
+      );
+      eventBus.emit("players_updated");
+    } else if (request.type === RequestDtoType.RevealArea) {
       gameSocketAppService.revealArea(
         gameId,
-        request.position.x,
-        request.position.z,
+        playerId,
       );
       eventBus.emit("game_updated");
     } else if (request.type === RequestDtoType.FlagArea) {
       gameSocketAppService.flagArea(
         gameId,
-        request.position.x,
-        request.position.z,
+        playerId,
       );
       eventBus.emit("game_updated");
     }
@@ -74,6 +81,7 @@ router.get("/:id", (ctx) => {
   ws.onmessage = onmessage;
 
   const onclose = () => {
+    gameSocketAppService.removePlayer(playerId);
   };
   ws.onclose = onclose;
 

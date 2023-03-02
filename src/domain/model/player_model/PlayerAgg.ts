@@ -38,6 +38,10 @@ export default class PlayerAgg {
     return this.position;
   }
 
+  public setPosition(position: PositionVo) {
+    this.position = position;
+  }
+
   public getDirection() {
     return this.direction;
   }

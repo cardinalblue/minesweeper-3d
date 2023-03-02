@@ -1,4 +1,8 @@
 import type { GameRepository } from "../../../domain/model/game_model/mod.ts";
+import {
+  DirectionVo,
+  PlayerAgg,
+} from "../../../domain/model/player_model/mod.ts";
 import type { PlayerRepository } from "../../../domain/model/player_model/mod.ts";
 import {
   GameAgg,
@@ -40,6 +44,27 @@ export default class Service {
     presenter.onMessage(JSON.stringify(response));
   }
 
+  public createPlayer(
+    playerId: string,
+    gameId: string,
+    name: string,
+  ) {
+    const newPlayer = new PlayerAgg(
+      playerId,
+      gameId,
+      name,
+      new PositionVo(0, 0),
+      new DirectionVo(0),
+    );
+    this.playerRepository.add(newPlayer);
+  }
+
+  public removePlayer(
+    playerId: string,
+  ) {
+    this.playerRepository.delete(playerId);
+  }
+
   public queryPlayers(
     presenter: Presenter,
     gameId: string,
@@ -62,24 +87,66 @@ export default class Service {
     return newGameAggDto(newGame);
   }
 
-  public revealArea(gameId: string, x: number, z: number) {
+  public movePlayer(gameId: string, playerId: string, directionDto: number) {
     const game = this.gameRepository.get(gameId);
     if (!game) {
       return;
     }
 
-    const pos = new PositionVo(x, z);
-    game.revealArea(pos);
+    const player = this.playerRepository.get(playerId);
+    if (!player) {
+      return;
+    }
+
+    const direction = new DirectionVo(directionDto);
+
+    let newPos = player.getPosition();
+    switch (direction.toNumber()) {
+      case 0:
+        newPos = newPos.shift(0, -1);
+        break;
+      case 1:
+        newPos = newPos.shift(1, 0);
+        break;
+      case 2:
+        newPos = newPos.shift(0, 1);
+        break;
+      case 3:
+        newPos = newPos.shift(-1, 0);
+        break;
+    }
+
+    player.setPosition(newPos);
+    this.playerRepository.update(player);
+  }
+
+  public revealArea(gameId: string, playerId: string) {
+    const game = this.gameRepository.get(gameId);
+    if (!game) {
+      return;
+    }
+
+    const player = this.playerRepository.get(playerId);
+    if (!player) {
+      return;
+    }
+
+    game.revealArea(player.getPosition());
     this.gameRepository.add(game);
   }
 
-  public flagArea(gameId: string, x: number, z: number) {
+  public flagArea(gameId: string, playerId: string) {
     const game = this.gameRepository.get(gameId);
     if (!game) {
       return;
     }
-    const pos = new PositionVo(x, z);
-    game.flagArea(pos);
+
+    const player = this.playerRepository.get(playerId);
+    if (!player) {
+      return;
+    }
+
+    game.flagArea(player.getPosition());
     this.gameRepository.add(game);
   }
 }

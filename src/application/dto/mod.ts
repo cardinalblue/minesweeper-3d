@@ -75,4 +75,4 @@ export const newPlayerAggDto = (player: PlayerAgg): PlayerAggDto => {
   };
 };
 
-export type { GameAggDto, PlayerAggDto, PositionVoDto };
+export type { DirectionVoDto, GameAggDto, PlayerAggDto, PositionVoDto };
