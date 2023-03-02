@@ -17,17 +17,22 @@ import { ResponseDtoType } from "./responseDto.ts";
 import { newGameAggDto, newPlayerAggDto } from "../../dto/mod.ts";
 import type { GameAggDto } from "../../dto/mod.ts";
 import type Presenter from "./Presenter.ts";
+import type { IntegrationEventPublisher } from "../../integration_event/mod.ts";
+import IntegrationEvent from "./IntegrationEvent.ts";
 
 export default class Service {
   private gameRepository: GameRepository;
   private playerRepository: PlayerRepository;
+  private integrationEventPublisher: IntegrationEventPublisher;
 
   constructor(
     gameRepository: GameRepository,
     playerRepository: PlayerRepository,
+    integrationEventPublisher: IntegrationEventPublisher,
   ) {
     this.gameRepository = gameRepository;
     this.playerRepository = playerRepository;
+    this.integrationEventPublisher = integrationEventPublisher;
   }
 
   public queryGame(presenter: Presenter, gameId: string) {
@@ -54,23 +59,32 @@ export default class Service {
       return;
     }
 
+    const originPos = new PositionVo(0, 0);
     const newPlayer = new PlayerAgg(
       playerId,
       gameId,
       name,
-      new PositionVo(0, 0),
+      originPos,
       new DirectionVo(2),
     );
     this.playerRepository.add(newPlayer);
 
-    game.revealArea(newPlayer.getPosition());
-    this.gameRepository.update(game);
+    this.integrationEventPublisher.publish(IntegrationEvent.PlayersUpdated);
+
+    const areaStood = game.getArea(originPos);
+    if (!areaStood.getRevealed()) {
+      game.revealArea(originPos);
+      this.gameRepository.update(game);
+      this.integrationEventPublisher.publish(IntegrationEvent.GameUpdated);
+    }
   }
 
   public removePlayer(
     playerId: string,
   ) {
     this.playerRepository.delete(playerId);
+
+    this.integrationEventPublisher.publish(IntegrationEvent.PlayersUpdated);
   }
 
   public queryPlayers(
@@ -130,24 +144,16 @@ export default class Service {
 
     player.setPosition(newPos);
     player.setDirection(direction);
-    game.revealArea(newPos);
+
     this.playerRepository.update(player);
-    this.gameRepository.update(game);
-  }
+    this.integrationEventPublisher.publish(IntegrationEvent.PlayersUpdated);
 
-  public revealArea(gameId: string, playerId: string) {
-    const game = this.gameRepository.get(gameId);
-    if (!game) {
-      return;
+    const areaStood = game.getArea(newPos);
+    if (!areaStood.getRevealed()) {
+      game.revealArea(newPos);
+      this.gameRepository.update(game);
+      this.integrationEventPublisher.publish(IntegrationEvent.GameUpdated);
     }
-
-    const player = this.playerRepository.get(playerId);
-    if (!player) {
-      return;
-    }
-
-    game.revealArea(player.getPosition());
-    this.gameRepository.add(game);
   }
 
   public flagArea(gameId: string, playerId: string) {

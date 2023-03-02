@@ -11,11 +11,6 @@ type MovePlayerRequestDto = {
   direction: DirectionVoDto;
 };
 
-type RevealAreaRequestDto = {
-  type: RequestDtoType.RevealArea;
-  position: PositionVoDto;
-};
-
 type FlagAreaRequestDto = {
   type: RequestDtoType.FlagArea;
   position: PositionVoDto;
@@ -23,7 +18,6 @@ type FlagAreaRequestDto = {
 
 type RequestDto =
   | MovePlayerRequestDto
-  | RevealAreaRequestDto
   | FlagAreaRequestDto;
 
 export type { RequestDto };

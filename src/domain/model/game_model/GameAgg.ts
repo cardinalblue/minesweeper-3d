@@ -37,7 +37,7 @@ export default class GameAgg {
     this.areas[pos.getX()][pos.getZ()] = area;
   }
 
-  private getArea(pos: PositionVo): AreaVo {
+  public getArea(pos: PositionVo): AreaVo {
     return this.areas[pos.getX()][pos.getZ()];
   }
 

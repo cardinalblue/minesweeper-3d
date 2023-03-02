@@ -7,8 +7,9 @@ import type {
 } from "./responseDto.ts";
 import { ResponseDtoType } from "./responseDto.ts";
 import type Presenter from "./Presenter.ts";
+import IntegrationEvent from "./IntegrationEvent.ts";
 
-export { RequestDtoType, ResponseDtoType, Service };
+export { IntegrationEvent, RequestDtoType, ResponseDtoType, Service };
 export type {
   GameUpdatedResponseDto,
   PlayersUpdatedResponseDto,

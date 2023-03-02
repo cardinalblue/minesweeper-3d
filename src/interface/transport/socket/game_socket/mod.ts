@@ -1,8 +1,8 @@
-import EventEmitter from "../../../../../deps/events.ts";
 import { Router } from "../../../../../deps/oak.ts";
 import GameMemRepository from "../../../../infrastructure/persistence/memory/GameMemRepository.ts";
 import PlayerMemRepository from "../../../../infrastructure/persistence/memory/PlayerMemRepository.ts";
 import {
+  IntegrationEvent,
   Service as GameSocketAppService,
 } from "../../../../application/app_service/GameSocketAppService/mod.ts";
 import type {
@@ -12,13 +12,13 @@ import type {
 import {
   RequestDtoType,
 } from "../../../../application/app_service/GameSocketAppService/mod.ts";
-
-class EventBus extends EventEmitter {}
-const eventBus = new EventBus();
+import { MemIntegrationEventSubscriber } from "../../messaging/mod.ts";
+import { MemIntegrationEventPublisher } from "../../../../infrastructure/messaging/mod.ts";
 
 const gameSocketAppService = new GameSocketAppService(
   new GameMemRepository(),
   new PlayerMemRepository(),
+  new MemIntegrationEventPublisher(),
 );
 gameSocketAppService.createGame();
 
@@ -50,13 +50,11 @@ router.get("/:id", (ctx) => {
   const playerId = crypto.randomUUID();
 
   const presenter = new SocketPresenter(ws);
+  const integrationSusbscriber = new MemIntegrationEventSubscriber();
 
   const onopen = () => {
     gameSocketAppService.queryGame(presenter, gameId);
-
     gameSocketAppService.addPlayer(playerId, gameId, "Hello World");
-    eventBus.emit("players_updated");
-
     gameSocketAppService.queryPlayers(presenter, gameId);
   };
   ws.onopen = onopen;
@@ -69,35 +67,25 @@ router.get("/:id", (ctx) => {
         playerId,
         request.direction,
       );
-      eventBus.emit("players_updated");
-      eventBus.emit("game_updated");
-    } else if (request.type === RequestDtoType.RevealArea) {
-      gameSocketAppService.revealArea(
-        gameId,
-        playerId,
-      );
-      eventBus.emit("game_updated");
     } else if (request.type === RequestDtoType.FlagArea) {
       gameSocketAppService.flagArea(
         gameId,
         playerId,
       );
-      eventBus.emit("game_updated");
     }
   };
   ws.onmessage = onmessage;
 
   const onclose = () => {
     gameSocketAppService.removePlayer(playerId);
-    eventBus.emit("players_updated");
   };
   ws.onclose = onclose;
 
-  eventBus.on("game_updated", () => {
+  integrationSusbscriber.subscribe(IntegrationEvent.GameUpdated, () => {
     gameSocketAppService.queryGame(presenter, gameId);
   });
 
-  eventBus.on("players_updated", () => {
+  integrationSusbscriber.subscribe(IntegrationEvent.PlayersUpdated, () => {
     gameSocketAppService.queryPlayers(presenter, gameId);
   });
 });
