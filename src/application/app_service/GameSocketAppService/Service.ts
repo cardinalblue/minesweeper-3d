@@ -11,6 +11,7 @@ import {
 } from "../../../domain/model/game_model/mod.ts";
 import type {
   GameUpdatedResponseDto,
+  NotificationSentResponseDto,
   PlayersUpdatedResponseDto,
 } from "./responseDto.ts";
 import { ResponseDtoType } from "./responseDto.ts";
@@ -35,6 +36,14 @@ export default class Service {
     this.integrationEventPublisher = integrationEventPublisher;
   }
 
+  public sendNotifaction(presenter: Presenter, message: string) {
+    const response: NotificationSentResponseDto = {
+      type: ResponseDtoType.NotificationSent,
+      message,
+    };
+    presenter.onMessage(JSON.stringify(response));
+  }
+
   public queryGame(presenter: Presenter, gameId: string) {
     const game = this.gameRepository.get(gameId);
     if (!game) {
@@ -52,7 +61,7 @@ export default class Service {
   public addPlayer(
     playerId: string,
     gameId: string,
-    name: string,
+    playerName: string,
   ) {
     const game = this.gameRepository.get(gameId);
     if (!game) {
@@ -66,7 +75,7 @@ export default class Service {
     const newPlayer = new PlayerAgg(
       playerId,
       gameId,
-      name,
+      playerName,
       originPos,
       new DirectionVo(1),
       false,
@@ -74,6 +83,10 @@ export default class Service {
     this.playerRepository.add(newPlayer);
 
     this.integrationEventPublisher.publish(IntegrationEvent.PlayersUpdated);
+    this.integrationEventPublisher.publish(
+      IntegrationEvent.NotificationSent,
+      `${playerName} joined the game`,
+    );
   }
 
   public revivePlayer(
@@ -92,16 +105,30 @@ export default class Service {
     );
     player.setPosition(originPos);
     player.setGuilty(false);
+    player.setDirection(new DirectionVo(1));
     this.playerRepository.update(player);
     this.integrationEventPublisher.publish(IntegrationEvent.PlayersUpdated);
+
+    this.integrationEventPublisher.publish(
+      IntegrationEvent.NotificationSent,
+      `${player.getName()} revied itself`,
+    );
   }
 
   public removePlayer(
     playerId: string,
   ) {
+    const player = this.playerRepository.get(playerId);
+    if (!player) return;
+
     this.playerRepository.delete(playerId);
 
     this.integrationEventPublisher.publish(IntegrationEvent.PlayersUpdated);
+
+    this.integrationEventPublisher.publish(
+      IntegrationEvent.NotificationSent,
+      `${player.getName()} left the game`,
+    );
   }
 
   public queryPlayers(
@@ -171,6 +198,10 @@ export default class Service {
 
             if (revealedArea.getBoomed()) {
               player.setGuilty(true);
+              this.integrationEventPublisher.publish(
+                IntegrationEvent.NotificationSent,
+                `${player.getName()} screwed it up!`,
+              );
             }
 
             this.gameRepository.update(game);
@@ -225,9 +256,14 @@ export default class Service {
     this.integrationEventPublisher.publish(IntegrationEvent.GameUpdated);
   }
 
-  public changeCamera(gameId: string) {
+  public changeCamera(gameId: string, playerId: string) {
     const game = this.gameRepository.get(gameId);
     if (!game) {
+      return;
+    }
+
+    const player = this.playerRepository.get(playerId);
+    if (!player) {
       return;
     }
 
@@ -235,11 +271,21 @@ export default class Service {
     this.gameRepository.update(game);
 
     this.integrationEventPublisher.publish(IntegrationEvent.GameUpdated);
+
+    this.integrationEventPublisher.publish(
+      IntegrationEvent.NotificationSent,
+      `${player.getName()} changed your camera`,
+    );
   }
 
-  public resetGame(gameId: string) {
+  public resetGame(gameId: string, playerId: string) {
     const game = this.gameRepository.get(gameId);
     if (!game) {
+      return;
+    }
+
+    const player = this.playerRepository.get(playerId);
+    if (!player) {
       return;
     }
 
@@ -251,6 +297,7 @@ export default class Service {
       );
       player.setPosition(originPos);
       player.setGuilty(false);
+      player.setDirection(new DirectionVo(1));
       this.playerRepository.update(player);
       this.integrationEventPublisher.publish(IntegrationEvent.PlayersUpdated);
     });
@@ -258,5 +305,10 @@ export default class Service {
     game.reset();
     this.gameRepository.update(game);
     this.integrationEventPublisher.publish(IntegrationEvent.GameUpdated);
+
+    this.integrationEventPublisher.publish(
+      IntegrationEvent.NotificationSent,
+      `${player.getName()} reset the game`,
+    );
   }
 }

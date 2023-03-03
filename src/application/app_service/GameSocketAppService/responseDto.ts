@@ -1,9 +1,15 @@
 import { GameAggDto, PlayerAggDto } from "../../dto/mod.ts";
 
 enum ResponseDtoType {
+  NotificationSent = "NOTIFICATION_SENT",
   GameUpdated = "GAME_UPDATED",
   PlayersUpdated = "PLAYERS_UPDATED",
 }
+
+type NotificationSentResponseDto = {
+  type: ResponseDtoType.NotificationSent;
+  message: string;
+};
 
 type GameUpdatedResponseDto = {
   type: ResponseDtoType.GameUpdated;
@@ -17,4 +23,8 @@ type PlayersUpdatedResponseDto = {
 };
 
 export { ResponseDtoType };
-export type { GameUpdatedResponseDto, PlayersUpdatedResponseDto };
+export type {
+  GameUpdatedResponseDto,
+  NotificationSentResponseDto,
+  PlayersUpdatedResponseDto,
+};

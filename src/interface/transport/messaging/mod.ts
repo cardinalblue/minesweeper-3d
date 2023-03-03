@@ -4,7 +4,11 @@ import type { IntegrationEventSubscriber } from "../../../application/integratio
 
 export class MemIntegrationEventSubscriber
   implements IntegrationEventSubscriber {
-  subscribe(event: string, cb: () => void): void {
+  subscribe(event: string, cb: (msg?: string) => void): () => void {
     eventBus.on(event, cb);
+
+    return () => {
+      eventBus.removeListener(event, cb);
+    };
   }
 }

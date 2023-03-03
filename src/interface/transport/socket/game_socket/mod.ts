@@ -47,6 +47,8 @@ router.get("/:id", (ctx) => {
   const ws = ctx.upgrade();
 
   const gameId = ctx.params.id;
+  const playerName = ctx.request.url.searchParams.get("playerName") ||
+    "Untitled";
   const myPlayerId = crypto.randomUUID();
 
   const presenter = new SocketPresenter(ws);
@@ -54,7 +56,7 @@ router.get("/:id", (ctx) => {
 
   const onopen = () => {
     gameSocketAppService.queryGame(presenter, gameId);
-    gameSocketAppService.addPlayer(myPlayerId, gameId, "Hello World");
+    gameSocketAppService.addPlayer(myPlayerId, gameId, playerName);
     gameSocketAppService.queryPlayers(presenter, gameId, myPlayerId);
   };
   ws.onopen = onopen;
@@ -80,27 +82,45 @@ router.get("/:id", (ctx) => {
     } else if (request.type === RequestDtoType.ChangeCamera) {
       gameSocketAppService.changeCamera(
         gameId,
+        myPlayerId,
       );
     } else if (request.type === RequestDtoType.ResetGame) {
       gameSocketAppService.resetGame(
         gameId,
+        myPlayerId,
       );
     }
   };
   ws.onmessage = onmessage;
 
+  const gameUpdatedUnsubscriber = integrationSusbscriber.subscribe(
+    IntegrationEvent.GameUpdated,
+    () => {
+      gameSocketAppService.queryGame(presenter, gameId);
+    },
+  );
+
+  const playersUpdatedUnsubscriber = integrationSusbscriber.subscribe(
+    IntegrationEvent.PlayersUpdated,
+    () => {
+      gameSocketAppService.queryPlayers(presenter, gameId, myPlayerId);
+    },
+  );
+
+  const notificationSentUnsubscriber = integrationSusbscriber.subscribe(
+    IntegrationEvent.NotificationSent,
+    (msg: string | undefined) => {
+      gameSocketAppService.sendNotifaction(presenter, msg || "");
+    },
+  );
+
   const onclose = () => {
+    gameUpdatedUnsubscriber();
+    playersUpdatedUnsubscriber();
+    notificationSentUnsubscriber();
     gameSocketAppService.removePlayer(myPlayerId);
   };
   ws.onclose = onclose;
-
-  integrationSusbscriber.subscribe(IntegrationEvent.GameUpdated, () => {
-    gameSocketAppService.queryGame(presenter, gameId);
-  });
-
-  integrationSusbscriber.subscribe(IntegrationEvent.PlayersUpdated, () => {
-    gameSocketAppService.queryPlayers(presenter, gameId, myPlayerId);
-  });
 });
 
 export { router };
