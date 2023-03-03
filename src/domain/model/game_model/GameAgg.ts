@@ -10,7 +10,7 @@ export default class GameAgg {
   private areas: AreaVo[][];
   private placedMinesCount: number;
   private status: GameStatus;
-  private camera: 0 | 1 | 2 | 3 | 4;
+  private camera: 0 | 1 | 2 | 3 | 4 | 5;
 
   constructor(id: string, size: SizeVo, minesCount: number) {
     this.id = id;
@@ -109,12 +109,12 @@ export default class GameAgg {
     return this.size;
   }
 
-  public getCamera(): 0 | 1 | 2 | 3 | 4 {
+  public getCamera(): 0 | 1 | 2 | 3 | 4 | 5 {
     return this.camera;
   }
 
   public changeCamera() {
-    this.camera = (this.camera + 1) % 5 as 0 | 1 | 2 | 3 | 4;
+    this.camera = (this.camera + 1) % 6 as 0 | 1 | 2 | 3 | 4 | 5;
   }
 
   public getMinesCount(): number {
