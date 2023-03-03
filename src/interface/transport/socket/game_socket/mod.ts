@@ -67,6 +67,11 @@ router.get("/:id", (ctx) => {
         myPlayerId,
         request.direction,
       );
+    } else if (request.type === RequestDtoType.RevivePlayer) {
+      gameSocketAppService.revivePlayer(
+        gameId,
+        myPlayerId,
+      );
     } else if (request.type === RequestDtoType.FlagArea) {
       gameSocketAppService.flagArea(
         gameId,

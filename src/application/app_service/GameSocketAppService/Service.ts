@@ -76,6 +76,26 @@ export default class Service {
     this.integrationEventPublisher.publish(IntegrationEvent.PlayersUpdated);
   }
 
+  public revivePlayer(
+    gameId: string,
+    playerId: string,
+  ) {
+    const game = this.gameRepository.get(gameId);
+    if (!game) return;
+
+    const player = this.playerRepository.get(playerId);
+    if (!player) return;
+
+    const originPos = new PositionVo(
+      -1,
+      Math.floor(game.getSize().getHeight() / 2),
+    );
+    player.setPosition(originPos);
+    player.setGuilty(false);
+    this.playerRepository.update(player);
+    this.integrationEventPublisher.publish(IntegrationEvent.PlayersUpdated);
+  }
+
   public removePlayer(
     playerId: string,
   ) {
