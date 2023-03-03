@@ -111,7 +111,7 @@ export default class Service {
 
     this.integrationEventPublisher.publish(
       IntegrationEvent.NotificationSent,
-      `@${player.getName()} revied itself`,
+      `@${player.getName().toUpperCase()} revied itself`,
     );
   }
 
@@ -127,7 +127,7 @@ export default class Service {
 
     this.integrationEventPublisher.publish(
       IntegrationEvent.NotificationSent,
-      `@${player.getName()} left the game`,
+      `@${player.getName().toUpperCase()} left the game`,
     );
   }
 
@@ -200,7 +200,7 @@ export default class Service {
               player.setGuilty(true);
               this.integrationEventPublisher.publish(
                 IntegrationEvent.NotificationSent,
-                `@${player.getName()} screwed it up!`,
+                `@${player.getName().toUpperCase()} screwed it up!`,
               );
             }
 
@@ -274,7 +274,7 @@ export default class Service {
 
     this.integrationEventPublisher.publish(
       IntegrationEvent.NotificationSent,
-      `@${player.getName()} changed your camera`,
+      `@${player.getName().toUpperCase()} changed your camera`,
     );
   }
 
@@ -308,7 +308,7 @@ export default class Service {
 
     this.integrationEventPublisher.publish(
       IntegrationEvent.NotificationSent,
-      `@${player.getName()} reset the game`,
+      `@${player.getName().toUpperCase()} reset the game`,
     );
   }
 }
